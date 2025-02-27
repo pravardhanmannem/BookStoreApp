@@ -1,0 +1,106 @@
+-------- Tools or Software's needed -----------
+
+Java Version: openjdk 17.0.12 2024-07-16
+Maven Version: Apache Maven 3.8.4
+Node Version : v10.24.1
+npm Version: 6.14.12
+Git Bash
+
+------------- GitHub Repo checkout ------------------------
+
+git clone https://github.com/pravardhanmannem/BookStoreApp.git
+
+--------------------- Backend Java Services Build ------------------
+
+cd C:\HackathonWork2\BookStoreApp\
+
+C:\HackathonWork2\BookStoreApp> mvn clean install -DskipTests=true
+
+--------------------- Frontend React UI App Build ------------------
+
+cd C:\HackathonWork2\BookStoreApp\bookstore-frontend-react-app
+
+C:\HackathonWork2\BookStoreApp\bookstore-frontend-react-app> npm install
+
+------------------ starting backend services -----------
+
+cd C:\HackathonWork2\BookStoreApp\
+
+java -jar C:\HackathonWork2\BookStoreApp\bookstore-account-service\target\bookstore-account-service-0.0.1-SNAPSHOT.jar
+
+java -jar C:\HackathonWork2\BookStoreApp\bookstore-catalog-service\target\bookstore-catalog-service-0.0.1-SNAPSHOT.jar
+
+java -jar C:\HackathonWork2\BookStoreApp\bookstore-billing-service\target\bookstore-billing-service-0.0.1-SNAPSHOT.jar
+
+java -jar C:\HackathonWork2\BookStoreApp\bookstore-order-service\target\bookstore-order-service-0.0.1-SNAPSHOT.jar
+
+java -jar C:\HackathonWork2\BookStoreApp\bookstore-payment-service\target\bookstore-payment-service-0.0.1-SNAPSHOT.jar
+
+java -jar C:\HackathonWork2\BookStoreApp\bookstore-api-gateway-service\target\bookstore-api-gateway-service-0.0.1-SNAPSHOT.jar
+
+------------ starting frontend React UI App ------------------
+
+cd C:\HackathonWork2\BookStoreApp\bookstore-frontend-react-app>
+
+npm start
+
+------------------- Launch UI on Browser -----------
+
+http://localhost:3000/
+
+--------------------------- backend direct end points ---------
+
+bookstore-account-service	http://localhost:4001/
+bookstore-billing-service	http://localhost:5001/
+bookstore-catalog-service	http://localhost:6001/
+bookstore-order-service		http://localhost:7001/
+bookstore-payment-service	http://localhost:8001/
+bookstore-api-gateway-service	http://localhost:8765/
+
+--------------------------- backend API Gateway end points ---------
+
+bookstore-account-service	http://localhost:8765/api/account
+bookstore-billing-service	http://localhost:8765/api/billing
+bookstore-catalog-service	http://localhost:8765/api/catalog
+bookstore-order-service		http://localhost:8765/api/order
+bookstore-payment-service	http://localhost:8765/api/payment
+bookstore-api-gateway-service	http://localhost:8765/api/
+
+-------------- How to connect to H2 DB for respective microservice ----------------
+
+bookstore-account-service	http://localhost:4001/h2-console
+bookstore-billing-service	http://localhost:5001/h2-console
+bookstore-catalog-service	http://localhost:6001/h2-console
+bookstore-order-service		http://localhost:7001/h2-console
+bookstore-payment-service	http://localhost:8001/h2-console
+bookstore-api-gateway-service	http://localhost:8765/h2-console
+
+JDBC URL: jdbc:h2:mem:bookstore_db
+User Name: sa
+Password: << Leave_Empty >>
+
+------------------- POST MAN to get OAUTH access_token ------------------
+
+METHOD : POST  
+
+URL : http://localhost:4001/oauth/token
+
+In Authorization Tab : choose 'Basic' ( Username: 93ed453e-b7ac-4192-a6d4-c45fae0d99ac , Password: client.devd123 )
+
+In Body Tab : choose 'x-www-form-url-encoded' , submit below lines in bulkedit
+
+grant_type:password
+username:admin.admin
+password:admin.devd123
+
+---------------------------- Application Accounts ---------------
+Admin 
+userName: 'admin.admin'
+password: 'admin.devd123'
+
+Normal User 
+userName: 'devd.cores'
+password: 'cores.devd123'
+
+----------------------------------------------------------------------------
+
