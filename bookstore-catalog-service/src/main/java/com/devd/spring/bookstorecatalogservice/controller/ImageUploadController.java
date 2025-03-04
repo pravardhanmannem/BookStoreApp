@@ -56,12 +56,14 @@ public class ImageUploadController {
         Map<String, String> response = new HashMap<>();
         response.put("imageId", uuid.toString() + "__" + fileName);
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
+    }	
     
     @GetMapping(path = "image/{imageId}")
     public ResponseEntity<?> getImage(@PathVariable String imageId) throws IOException {
         try {
             Path imagePath = Paths.get("images", imageId);
+            log.info("file path : " + imagePath.getFileName());
+            log.info("file exists: " + Files.exists(imagePath) + ", readable: " + Files.isReadable(imagePath));
             
             // Check if the file exists and is readable
             if (Files.exists(imagePath) && Files.isReadable(imagePath)) {
