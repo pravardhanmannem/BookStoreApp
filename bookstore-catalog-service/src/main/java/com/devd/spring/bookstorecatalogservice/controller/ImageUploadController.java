@@ -57,23 +57,33 @@ public class ImageUploadController {
         response.put("imageId", uuid.toString() + "__" + fileName);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
+    
     @GetMapping(path = "image/{imageId}")
     public ResponseEntity<?> getImage(@PathVariable String imageId) throws IOException {
         try {
-            Optional<Path> images = Files.list(Paths.get("images")).filter(img -> img.getFileName().toString().equals(imageId)).findFirst();
-            if (images.isPresent()) {
-                final ByteArrayResource inputStream = new ByteArrayResource(Files.readAllBytes(images.get()));
-                return ResponseEntity
-                        .status(HttpStatus.OK)
-                        .contentType(MediaType.IMAGE_JPEG)
-                        .contentLength(inputStream.contentLength())
-                        .body(inputStream);
+            Path imagePath = Paths.get("images", imageId);
+            
+            // Check if the file exists and is readable
+            if (Files.exists(imagePath) && Files.isReadable(imagePath)) {
+                ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(imagePath));
+                
+                // Detect file type dynamically
+                String contentType = Files.probeContentType(imagePath);
+                if (contentType == null) {
+                    contentType = "application/octet-stream"; // Fallback content type
+                }
+                
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .contentLength(resource.contentLength())
+                        .body(resource);
             }
-            return ResponseEntity.ok().build();
+            
+            return ResponseEntity.notFound().build();
         } catch (Exception ex) {
-            log.error("ImageUploadController, ExceptionMSG1 : " + ex.getMessage());
-            throw ex;
+            log.error("Exception in getImage: {}", ex.getMessage(), ex);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving image");
         }
     }
+
 }
