@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,7 +62,8 @@ public class ImageUploadController {
     @GetMapping(path = "image/{imageId}")
     public ResponseEntity<?> getImage(@PathVariable String imageId) throws IOException {
         try {
-            Path imagePath = Paths.get("images", imageId);
+            //Path imagePath = Paths.get("images", imageId);
+            Path imagePath = Paths.get(new File("images").getCanonicalPath(), imageId);
             log.info("file path : " + imagePath.getFileName());
             log.info("file exists: " + Files.exists(imagePath) + ", readable: " + Files.isReadable(imagePath));
             
