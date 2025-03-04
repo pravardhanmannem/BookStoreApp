@@ -1,6 +1,7 @@
 package com.devd.spring.bookstorecatalogservice.controller;
 
 import com.devd.spring.bookstorecommons.exception.RunTimeExceptionPlaceHolder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,6 +34,7 @@ import java.util.UUID;
     For time being will go with no-cost implementation.
  */
 @RestController
+@Slf4j
 public class ImageUploadController {
 
     @PostMapping("image/upload")
@@ -58,15 +60,20 @@ public class ImageUploadController {
 
     @GetMapping(path = "image/{imageId}")
     public ResponseEntity<?> getImage(@PathVariable String imageId) throws IOException {
-        Optional<Path> images = Files.list(Paths.get("images")).filter(img -> img.getFileName().toString().equals(imageId)).findFirst();
-        if (images.isPresent()) {
-            final ByteArrayResource inputStream = new ByteArrayResource(Files.readAllBytes(images.get()));
-            return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .contentType(MediaType.IMAGE_JPEG)
-                    .contentLength(inputStream.contentLength())
-                    .body(inputStream);
+        try {
+            Optional<Path> images = Files.list(Paths.get("images")).filter(img -> img.getFileName().toString().equals(imageId)).findFirst();
+            if (images.isPresent()) {
+                final ByteArrayResource inputStream = new ByteArrayResource(Files.readAllBytes(images.get()));
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .contentType(MediaType.IMAGE_JPEG)
+                        .contentLength(inputStream.contentLength())
+                        .body(inputStream);
+            }
+            return ResponseEntity.ok().build();
+        } catch (Exception ex) {
+            log.error("Something went wrong, Exception : " + ex.getMessage());
+            return ResponseEntity.ok().build();
         }
-        return ResponseEntity.ok().build();
     }
 }
