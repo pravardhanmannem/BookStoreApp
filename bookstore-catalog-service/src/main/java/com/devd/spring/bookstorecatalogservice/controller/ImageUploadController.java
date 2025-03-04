@@ -73,8 +73,10 @@ public class ImageUploadController {
             return ResponseEntity.ok().build();
         } catch (Exception ex) {
             ex.printStackTrace();
-            log.error("Something went wrong, Exception : " + ex.getMessage());
-            return ResponseEntity.ok().build();
+            log.error("ImageUploadController, ExceptionMSG1 : " + ex.getMessage());
+            log.error("ImageUploadController, ExceptionMSG2 : " + ex.getCause().getMessage());
+            log.error("ImageUploadController, ExceptionMSG3 : " + ex.getCause());
+            throw ex;
         }
     }
 }
