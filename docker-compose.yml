@@ -14,6 +14,17 @@ services:
     environment:
       - SERVER_PORT=8765
       - SPRING_PROFILES_ACTIVE=docker
+      - BOOKSTORE_BILLING_SERVICE=bookstore-billing-service
+      - BOOKSTORE_CATALOG_SERVICE=bookstore-catalog-service
+      - BOOKSTORE_ACCOUNT_SERVICE=bookstore-account-service
+      - BOOKSTORE_ORDER_SERVICE=bookstore-order-service
+      - BOOKSTORE_PAYMENT_SERVICE=bookstore-payment-service
+    depends_on:
+      - bookstore-account-service
+      - bookstore-billing-service
+      - bookstore-catalog-service
+      - bookstore-order-service
+      - bookstore-payment-service
 
   bookstore-account-service:
     image: bookstore-account-service:v1.0
@@ -83,7 +94,22 @@ services:
       - bookstore-network
     environment:
       - SERVER_PORT=8001
-      - SPRING_PROFILES_ACTIVE=local    
+      - SPRING_PROFILES_ACTIVE=local
+      
+  bookstore-frontend-react-service:
+    image: bookstore-frontend-react-service:v1.0
+    container_name: bookstore-frontend-react-service
+    build:
+      context: ./bookstore-frontend-react-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Exposing Frontend Service
+    networks:
+      - bookstore-network
+    environment:
+      - BOOKSTORE_API_GATEWAY_SERVICE=bookstore-api-gateway-service
+    depends_on:
+      - bookstore-api-gateway-service      
 
 networks:
   bookstore-network:

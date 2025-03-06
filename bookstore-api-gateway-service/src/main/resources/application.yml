@@ -85,19 +85,19 @@ zuul:
   routes:
     billing:
       path: /billing/**
-      serviceId: http://bookstore-billing-service:5001/
+      serviceId: http://${BOOKSTORE_BILLING_SERVICE:bookstore-billing-service}:5001/
     catalog:
       path: /catalog/**
-      serviceId: http://bookstore-catalog-service:6001/
+      serviceId: http://${BOOKSTORE_CATALOG_SERVICE:bookstore-catalog-service}:6001/
     account:
       path: /account/**
-      serviceId: http://bookstore-account-service:4001/
+      serviceId: http://${BOOKSTORE_ACCOUNT_SERVICE:bookstore-account-service}:4001/
     order:
       path: /order/**
-      serviceId: http://bookstore-order-service:7001/
+      serviceId: http://${BOOKSTORE_ORDER_SERVICE:bookstore-order-service}:7001/
     payment:
       path: /payment/**
-      serviceId: http://bookstore-payment-service:8001/
+      serviceId: http://${BOOKSTORE_PAYMENT_SERVICE:bookstore-payment-service}:8001/
   ribbon:
     eager-load:
       enabled: true
