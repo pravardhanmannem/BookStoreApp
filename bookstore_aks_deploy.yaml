@@ -1,0 +1,273 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bookstore
+
+---
+# API Gateway Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-api-gateway-service
+  namespace: bookstore
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookstore-api-gateway-service
+  template:
+    metadata:
+      labels:
+        app: bookstore-api-gateway-service
+    spec:
+      containers:
+        - name: bookstore-api-gateway-service
+          image: bookstore-api-gateway-service:v1.0
+          ports:
+            - containerPort: 8765
+          env:
+            - name: SERVER_PORT
+              value: "8765"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "docker"
+
+---
+# API Gateway Service (External Load Balancer)
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-api-gateway-service
+  namespace: bookstore
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 8765
+  selector:
+    app: bookstore-api-gateway-service
+
+---
+# Bookstore Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-frontend-react-service
+  namespace: bookstore
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookstore-frontend-react-service
+  template:
+    metadata:
+      labels:
+        app: bookstore-frontend-react-service
+    spec:
+      containers:
+        - name: bookstore-frontend-react-service
+          image: bookstore-frontend-react-service:v1.0
+          ports:
+            - containerPort: 3000
+          env:
+            - name: BOOKSTORE_API_GATEWAY_SERVICE
+              value: "bookstore-api-gateway-service"
+
+---
+# Frontend Service (External Load Balancer)
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-frontend-react-service
+  namespace: bookstore
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 3000
+  selector:
+    app: bookstore-frontend-react-service
+
+---
+# Account Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-account-service
+  namespace: bookstore
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookstore-account-service
+  template:
+    metadata:
+      labels:
+        app: bookstore-account-service
+    spec:
+      containers:
+        - name: bookstore-account-service
+          image: bookstore-account-service:v1.0
+          ports:
+            - containerPort: 4001
+
+---
+# Account Service ClusterIP (Internal)
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-account-service
+  namespace: bookstore
+spec:
+  type: ClusterIP
+  ports:
+    - port: 4001
+  selector:
+    app: bookstore-account-service
+
+---
+# Billing Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-billing-service
+  namespace: bookstore
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookstore-billing-service
+  template:
+    metadata:
+      labels:
+        app: bookstore-billing-service
+    spec:
+      containers:
+        - name: bookstore-billing-service
+          image: bookstore-billing-service:v1.0
+          ports:
+            - containerPort: 5001
+
+---
+# Billing Service ClusterIP (Internal)
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-billing-service
+  namespace: bookstore
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5001
+  selector:
+    app: bookstore-billing-service
+
+---
+# Catalog Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-catalog-service
+  namespace: bookstore
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookstore-catalog-service
+  template:
+    metadata:
+      labels:
+        app: bookstore-catalog-service
+    spec:
+      containers:
+        - name: bookstore-catalog-service
+          image: bookstore-catalog-service:v1.0
+          ports:
+            - containerPort: 6001
+
+---
+# Catalog Service ClusterIP (Internal)
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-catalog-service
+  namespace: bookstore
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6001
+  selector:
+    app: bookstore-catalog-service
+
+---
+# Order Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-order-service
+  namespace: bookstore
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookstore-order-service
+  template:
+    metadata:
+      labels:
+        app: bookstore-order-service
+    spec:
+      containers:
+        - name: bookstore-order-service
+          image: bookstore-order-service:v1.0
+          ports:
+            - containerPort: 7001
+
+---
+# Order Service ClusterIP (Internal)
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-order-service
+  namespace: bookstore
+spec:
+  type: ClusterIP
+  ports:
+    - port: 7001
+  selector:
+    app: bookstore-order-service
+
+---
+# Payment Service Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookstore-payment-service
+  namespace: bookstore
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: bookstore-payment-service
+  template:
+    metadata:
+      labels:
+        app: bookstore-payment-service
+    spec:
+      containers:
+        - name: bookstore-payment-service
+          image: bookstore-payment-service:v1.0
+          ports:
+            - containerPort: 8001
+
+---
+# Payment Service ClusterIP (Internal)
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookstore-payment-service
+  namespace: bookstore
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8001
+  selector:
+    app: bookstore-payment-service

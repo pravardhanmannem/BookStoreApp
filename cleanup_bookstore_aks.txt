@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Set the namespace
+NAMESPACE="bookstore"
+
+# Delete all deployments in the namespace
+kubectl delete deployments --all -n $NAMESPACE
+
+# Delete all services in the namespace
+kubectl delete services --all -n $NAMESPACE
+
+# Delete the namespace itself (this will remove all resources inside it)
+kubectl delete namespace $NAMESPACE
+
+echo "Cleanup completed: All bookstore services in AKS have been removed."
