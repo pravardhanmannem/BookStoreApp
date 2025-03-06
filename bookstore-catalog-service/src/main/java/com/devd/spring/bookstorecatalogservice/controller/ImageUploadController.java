@@ -62,7 +62,8 @@ public class ImageUploadController {
     @GetMapping(path = "image/{imageId}")
     public ResponseEntity<?> getImage(@PathVariable String imageId) throws IOException {
         try {
-            Path imagePath = Paths.get("images", imageId);
+            //Path imagePath = Paths.get("images", imageId);            
+            Path imagePath = Paths.get(new File("images").getAbsolutePath(), imageId);
             log.info("file getRoot : " + imagePath.getRoot());
             log.info("file getFileSystem : " + imagePath.getFileSystem());
             log.info("file path : " + imagePath);
