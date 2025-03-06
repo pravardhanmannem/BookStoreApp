@@ -1,9 +1,4 @@
-FROM openjdk:8-jdk-alpine
-
-VOLUME /tmp
-
-ARG JAR_FILE
-
-COPY target/${JAR_FILE} gateway-server.jar
-
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/gateway-server.jar"]
+FROM eclipse-temurin:17-jdk-alpine
+WORKDIR /app
+COPY target/bookstore-api-gateway-service-0.0.1-SNAPSHOT.jar bookstore-api-gateway-service.jar
+ENTRYPOINT ["java","-jar","/app/bookstore-api-gateway-service.jar"]
