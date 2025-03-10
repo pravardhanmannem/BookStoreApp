@@ -1,7 +1,7 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: bookstore
+#apiVersion: v1
+#kind: Namespace
+#metadata:
+#  name: hack4job
 
 ---
 # API Gateway Deployment
@@ -9,7 +9,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-api-gateway-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   replicas: 2
   selector:
@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: bookstore-api-gateway-service
-          image: bookstore-api-gateway-service:v1.0
+          image: acrhack01.azurecr.io/bookstore-api-gateway-service:v1.0
           ports:
             - containerPort: 8765
           env:
@@ -30,6 +30,17 @@ spec:
               value: "8765"
             - name: SPRING_PROFILES_ACTIVE
               value: "docker"
+            - name: BOOKSTORE_BILLING_SERVICE
+              value: "bookstore-billing-service"
+            - name: BOOKSTORE_CATALOG_SERVICE
+              value: "bookstore-catalog-service"
+            - name: BOOKSTORE_ACCOUNT_SERVICE
+              value: "bookstore-account-service"
+            - name: BOOKSTORE_ORDER_SERVICE
+              value: "bookstore-order-service"
+            - name: BOOKSTORE_PAYMENT_SERVICE
+              value: "bookstore-payment-service"  
+                
 
 ---
 # API Gateway Service (External Load Balancer)
@@ -37,11 +48,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bookstore-api-gateway-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   type: LoadBalancer
   ports:
-    - port: 80
+    - port: 8765
       targetPort: 8765
   selector:
     app: bookstore-api-gateway-service
@@ -52,7 +63,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-frontend-react-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   replicas: 2
   selector:
@@ -65,7 +76,7 @@ spec:
     spec:
       containers:
         - name: bookstore-frontend-react-service
-          image: bookstore-frontend-react-service:v1.0
+          image: acrhack01.azurecr.io/bookstore-frontend-react-service:v1.1
           ports:
             - containerPort: 3000
           env:
@@ -78,11 +89,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bookstore-frontend-react-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   type: LoadBalancer
   ports:
-    - port: 80
+    - port: 3000
       targetPort: 3000
   selector:
     app: bookstore-frontend-react-service
@@ -93,7 +104,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-account-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   replicas: 2
   selector:
@@ -106,9 +117,12 @@ spec:
     spec:
       containers:
         - name: bookstore-account-service
-          image: bookstore-account-service:v1.0
+          image: acrhack01.azurecr.io/bookstore-account-service:v1.0
           ports:
             - containerPort: 4001
+          env:
+            - name: SERVER_PORT
+              value: "4001"  
 
 ---
 # Account Service ClusterIP (Internal)
@@ -116,7 +130,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bookstore-account-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   type: ClusterIP
   ports:
@@ -130,7 +144,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-billing-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   replicas: 2
   selector:
@@ -143,9 +157,12 @@ spec:
     spec:
       containers:
         - name: bookstore-billing-service
-          image: bookstore-billing-service:v1.0
+          image: acrhack01.azurecr.io/bookstore-billing-service:v1.0
           ports:
             - containerPort: 5001
+          env:
+            - name: SERVER_PORT
+              value: "5001" 
 
 ---
 # Billing Service ClusterIP (Internal)
@@ -153,7 +170,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bookstore-billing-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   type: ClusterIP
   ports:
@@ -167,7 +184,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-catalog-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   replicas: 2
   selector:
@@ -180,9 +197,12 @@ spec:
     spec:
       containers:
         - name: bookstore-catalog-service
-          image: bookstore-catalog-service:v1.0
+          image: acrhack01.azurecr.io/bookstore-catalog-service:v1.0
           ports:
             - containerPort: 6001
+          env:
+            - name: SERVER_PORT
+              value: "6001"  
 
 ---
 # Catalog Service ClusterIP (Internal)
@@ -190,7 +210,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bookstore-catalog-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   type: ClusterIP
   ports:
@@ -204,7 +224,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-order-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   replicas: 2
   selector:
@@ -217,9 +237,12 @@ spec:
     spec:
       containers:
         - name: bookstore-order-service
-          image: bookstore-order-service:v1.0
+          image: acrhack01.azurecr.io/bookstore-order-service:v1.0
           ports:
             - containerPort: 7001
+          env:
+            - name: SERVER_PORT
+              value: "7001"  
 
 ---
 # Order Service ClusterIP (Internal)
@@ -227,7 +250,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bookstore-order-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   type: ClusterIP
   ports:
@@ -241,7 +264,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bookstore-payment-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   replicas: 2
   selector:
@@ -254,9 +277,12 @@ spec:
     spec:
       containers:
         - name: bookstore-payment-service
-          image: bookstore-payment-service:v1.0
+          image: acrhack01.azurecr.io/bookstore-payment-service:v1.0
           ports:
             - containerPort: 8001
+          env:
+            - name: SERVER_PORT
+              value: "8001"
 
 ---
 # Payment Service ClusterIP (Internal)
@@ -264,7 +290,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: bookstore-payment-service
-  namespace: bookstore
+  namespace: hack4job
 spec:
   type: ClusterIP
   ports:
