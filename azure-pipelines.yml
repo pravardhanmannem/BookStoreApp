@@ -1,0 +1,129 @@
+trigger:
+- main  # Change if needed
+
+pool:
+  vmImage: 'ubuntu-latest'  # Use 'windows-latest' if required
+
+variables:
+  acrName: 'acrhack01'
+  acrLoginServer: 'acrhack01.azurecr.io'
+  k8sNamespace: 'hack4job'  # Change if needed
+
+  # Define versions for all services
+  imageVersion: 'v1.2'  # Change this to update all services at once
+  backendServices:
+    - bookstore-account-service
+    - bookstore-payment-service
+    - bookstore-catalog-service
+    - bookstore-billing-service
+    - bookstore-api-gateway-service
+    - bookstore-order-service
+  frontendService: 'bookstore-frontend-react-app'
+  frontendImage: 'bookstore-frontend-react-service'
+
+stages:
+- stage: Build
+  displayName: 'Build Java & React Apps'
+  jobs:
+  - job: BuildBackend
+    strategy:
+      matrix:
+        bookstore-account-service: { serviceName: 'bookstore-account-service' }
+        bookstore-payment-service: { serviceName: 'bookstore-payment-service' }
+        bookstore-catalog-service: { serviceName: 'bookstore-catalog-service' }
+        bookstore-billing-service: { serviceName: 'bookstore-billing-service' }
+        bookstore-api-gateway-service: { serviceName: 'bookstore-api-gateway-service' }
+        bookstore-order-service: { serviceName: 'bookstore-order-service' }
+    steps:
+    - task: Maven@3
+      displayName: 'Maven Build: $(serviceName)'
+      inputs:
+        mavenPomFile: 'BookStoreApp/$(serviceName)/pom.xml'
+        goals: 'clean install'
+        options: '-DskipTests=true'
+
+    - script: |
+        docker build -t $(serviceName):$(imageVersion) BookStoreApp/$(serviceName)
+      displayName: 'Build Docker Image: $(serviceName)'
+
+  - job: BuildFrontend
+    steps:
+    - task: NodeTool@0
+      displayName: 'Install Node.js'
+      inputs:
+        versionSpec: '10.24.1'  # Adjust Node.js version as needed
+
+    - script: |
+        cd BookStoreApp/$(frontendService)
+        npm install
+      displayName: 'Install Dependencies'
+
+    - script: |
+        docker build -t $(frontendImage):$(imageVersion) BookStoreApp/$(frontendService)
+      displayName: 'Build Frontend Docker Image'
+
+- stage: PushToACR
+  displayName: 'Push Images to Azure Container Registry'
+  jobs:
+  - job: PushBackend
+    strategy:
+      matrix:
+        bookstore-account-service: { serviceName: 'bookstore-account-service' }
+        bookstore-payment-service: { serviceName: 'bookstore-payment-service' }
+        bookstore-catalog-service: { serviceName: 'bookstore-catalog-service' }
+        bookstore-billing-service: { serviceName: 'bookstore-billing-service' }
+        bookstore-api-gateway-service: { serviceName: 'bookstore-api-gateway-service' }
+        bookstore-order-service: { serviceName: 'bookstore-order-service' }
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Login to ACR'
+      inputs:
+        azureSubscription: 'adf26b12-8733-4b1d-8d7f-441d0bd42b73'  # Replace with actual service connection
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az acr login --name $(acrName)
+
+    - script: |
+        docker tag $(serviceName):$(imageVersion) $(acrLoginServer)/$(serviceName):$(imageVersion)
+        docker push $(acrLoginServer)/$(serviceName):$(imageVersion)
+      displayName: 'Tag & Push: $(serviceName)'
+
+  - job: PushFrontend
+    steps:
+    - task: AzureCLI@2
+      displayName: 'Login to ACR'
+      inputs:
+        azureSubscription: 'your-service-connection'
+        scriptType: 'bash'
+        scriptLocation: 'inlineScript'
+        inlineScript: |
+          az acr login --name $(acrName)
+
+    - script: |
+        docker tag $(frontendImage):$(imageVersion) $(acrLoginServer)/$(frontendImage):$(imageVersion)
+        docker push $(acrLoginServer)/$(frontendImage):$(imageVersion)
+      displayName: 'Tag & Push Frontend Image'
+
+- stage: DeployToK8s
+  displayName: 'Deploy All Services to Kubernetes'
+  jobs:
+  - job: DeployAll
+    steps:
+    - task: KubernetesManifest@1
+      displayName: 'Apply Deployment YAML'
+      inputs:
+        action: 'deploy'
+        kubernetesServiceConnection: 'hack4job-k8s-service-connection'
+        namespace: $(k8sNamespace)
+        manifests: 'BookStoreApp/bookstore_aks_deploy.yaml'
+
+    - script: |
+        kubectl set image deployment/bookstore-account-service bookstore-account-service=$(acrLoginServer)/bookstore-account-service:$(imageVersion) -n $(k8sNamespace)
+        kubectl set image deployment/bookstore-payment-service bookstore-payment-service=$(acrLoginServer)/bookstore-payment-service:$(imageVersion) -n $(k8sNamespace)
+        kubectl set image deployment/bookstore-catalog-service bookstore-catalog-service=$(acrLoginServer)/bookstore-catalog-service:$(imageVersion) -n $(k8sNamespace)
+        kubectl set image deployment/bookstore-billing-service bookstore-billing-service=$(acrLoginServer)/bookstore-billing-service:$(imageVersion) -n $(k8sNamespace)
+        kubectl set image deployment/bookstore-api-gateway-service bookstore-api-gateway-service=$(acrLoginServer)/bookstore-api-gateway-service:$(imageVersion) -n $(k8sNamespace)
+        kubectl set image deployment/bookstore-order-service bookstore-order-service=$(acrLoginServer)/bookstore-order-service:$(imageVersion) -n $(k8sNamespace)
+        kubectl set image deployment/bookstore-frontend-react-app bookstore-frontend-react-service=$(acrLoginServer)/bookstore-frontend-react-service:$(imageVersion) -n $(k8sNamespace)
+      displayName: 'Update Deployment Image Versions'
