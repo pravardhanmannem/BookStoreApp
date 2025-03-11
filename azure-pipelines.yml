@@ -8,16 +8,7 @@ variables:
   acrName: 'acrhack01'
   acrLoginServer: 'acrhack01.azurecr.io'
   k8sNamespace: 'hack4job'  # Change if needed
-
-  # Define versions for all services
   imageVersion: 'v1.2'  # Change this to update all services at once
-  backendServices:
-    - bookstore-account-service
-    - bookstore-payment-service
-    - bookstore-catalog-service
-    - bookstore-billing-service
-    - bookstore-api-gateway-service
-    - bookstore-order-service
   frontendService: 'bookstore-frontend-react-app'
   frontendImage: 'bookstore-frontend-react-service'
 
@@ -78,7 +69,7 @@ stages:
     - task: AzureCLI@2
       displayName: 'Login to ACR'
       inputs:
-        azureSubscription: 'adf26b12-8733-4b1d-8d7f-441d0bd42b73'  # Replace with actual service connection
+        azureSubscription: 'your-service-connection'
         scriptType: 'bash'
         scriptLocation: 'inlineScript'
         inlineScript: |
@@ -91,15 +82,6 @@ stages:
 
   - job: PushFrontend
     steps:
-    - task: AzureCLI@2
-      displayName: 'Login to ACR'
-      inputs:
-        azureSubscription: 'your-service-connection'
-        scriptType: 'bash'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          az acr login --name $(acrName)
-
     - script: |
         docker tag $(frontendImage):$(imageVersion) $(acrLoginServer)/$(frontendImage):$(imageVersion)
         docker push $(acrLoginServer)/$(frontendImage):$(imageVersion)
@@ -119,11 +101,8 @@ stages:
         manifests: 'BookStoreApp/bookstore_aks_deploy.yaml'
 
     - script: |
-        kubectl set image deployment/bookstore-account-service bookstore-account-service=$(acrLoginServer)/bookstore-account-service:$(imageVersion) -n $(k8sNamespace)
-        kubectl set image deployment/bookstore-payment-service bookstore-payment-service=$(acrLoginServer)/bookstore-payment-service:$(imageVersion) -n $(k8sNamespace)
-        kubectl set image deployment/bookstore-catalog-service bookstore-catalog-service=$(acrLoginServer)/bookstore-catalog-service:$(imageVersion) -n $(k8sNamespace)
-        kubectl set image deployment/bookstore-billing-service bookstore-billing-service=$(acrLoginServer)/bookstore-billing-service:$(imageVersion) -n $(k8sNamespace)
-        kubectl set image deployment/bookstore-api-gateway-service bookstore-api-gateway-service=$(acrLoginServer)/bookstore-api-gateway-service:$(imageVersion) -n $(k8sNamespace)
-        kubectl set image deployment/bookstore-order-service bookstore-order-service=$(acrLoginServer)/bookstore-order-service:$(imageVersion) -n $(k8sNamespace)
+        for service in bookstore-account-service bookstore-payment-service bookstore-catalog-service bookstore-billing-service bookstore-api-gateway-service bookstore-order-service; do
+          kubectl set image deployment/$service $service=$(acrLoginServer)/$service:$(imageVersion) -n $(k8sNamespace)
+        done
         kubectl set image deployment/bookstore-frontend-react-app bookstore-frontend-react-service=$(acrLoginServer)/bookstore-frontend-react-service:$(imageVersion) -n $(k8sNamespace)
       displayName: 'Update Deployment Image Versions'
